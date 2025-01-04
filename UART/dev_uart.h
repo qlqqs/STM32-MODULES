@@ -65,6 +65,7 @@ typedef struct {
 } uart_flush_config_t;
 
 /************************************** 以下为函数声明 ******************************************/
+/* 外部函数声明 */
 void uart_device_init(uint8_t uart_id);                                                     /* 串口设备初始化 */
 uint16_t uart_write(uint8_t uart_id, const uint8_t *buf, uint16_t size);                    /* 串口写数据 */
 uint16_t uart_read(uint8_t uart_id, uint8_t *buf, uint16_t size);                           /* 串口读数据 */
@@ -73,13 +74,20 @@ void uart_dmarx_half_done_isr(uint8_t uart_id);                                 
 void uart_dmarx_idle_isr(uint8_t uart_id);                                                  /* 串口空闲中断处理 */
 void uart_dmatx_done_isr(uint8_t uart_id);                                                  /* DMA发送完成中断处理 */
 void uart_poll_dma_tx(uint8_t uart_id);                                                     /* 轮询DMA发送 */
+
 uint8_t uart_set_baudrate(uint8_t uart_id, uint32_t baudrate);                              /* 设置串口波特率 */
 uart_flush_status_t uart_flush_buffer(uint8_t uart_id, const uart_flush_config_t *config);  /* 清空串口缓冲区,带配置参数 */
 uart_flush_status_t uart_flush(uint8_t uart_id);                                            /* 清空串口缓冲区,使用默认配置 */
+
+/******************* 移植需要修改的函数声明 ******************/
 int uart1_print(const char *str, uint16_t len);                                             /* 串口1直接打印字符串 */
 int uart1_printf(const char *format, ...);                                                  /* 串口1格式化打印 */
+int uart3_print(const char *str, uint16_t len);                                             /* 串口3直接打印字符串 */
 int uart3_printf(const char *format, ...);                                                  /* 串口3格式化打印 */
+int uart4_print(const char *str, uint16_t len);                                             /* 串口4直接打印字符串 */
 int uart4_printf(const char *format, ...);                                                  /* 串口4格式化打印 */
+int uart5_print(const char *str, uint16_t len);                                             /* 串口5直接打印字符串 */
 int uart5_printf(const char *format, ...);                                                  /* 串口5格式化打印 */
+/******************* 移植需要修改的函数声明 ******************/
 
 #endif

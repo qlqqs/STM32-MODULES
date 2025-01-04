@@ -1,8 +1,8 @@
 #include "led.h"
 
 /**
- * @brief LED1打开
- * @note 设置LED1引脚为高电平
+ * @brief LED1��
+ * @note ����LED1����Ϊ�ߵ�ƽ
  */
 void LED_01_ON(void)
 {
@@ -10,8 +10,8 @@ void LED_01_ON(void)
 }
 
 /**
- * @brief LED1关闭
- * @note 设置LED1引脚为低电平
+ * @brief LED1�ر�
+ * @note ����LED1����Ϊ�͵�ƽ
  */
 void LED_01_OFF(void)
 {
@@ -19,8 +19,8 @@ void LED_01_OFF(void)
 }
 
 /**
- * @brief LED1翻转
- * @note 翻转LED1引脚电平状态
+ * @brief LED1��ת
+ * @note ��תLED1���ŵ�ƽ״̬
  */
 void LED_01_TOGGLE(void)
 {
@@ -28,8 +28,8 @@ void LED_01_TOGGLE(void)
 }
 
 /**
- * @brief LED2打开
- * @note 设置LED2引脚为高电平
+ * @brief LED2��
+ * @note ����LED2����Ϊ�ߵ�ƽ
  */
 void LED_02_ON(void)
 {
@@ -37,8 +37,8 @@ void LED_02_ON(void)
 }
 
 /**
- * @brief LED2关闭
- * @note 设置LED2引脚为低电平
+ * @brief LED2�ر�
+ * @note ����LED2����Ϊ�͵�ƽ
  */
 void LED_02_OFF(void)
 {
@@ -46,8 +46,8 @@ void LED_02_OFF(void)
 }
 
 /**
- * @brief LED2翻转
- * @note 翻转LED2引脚电平状态
+ * @brief LED2��ת
+ * @note ��תLED2���ŵ�ƽ״̬
  */
 void LED_02_TOGGLE(void)
 {
@@ -55,8 +55,8 @@ void LED_02_TOGGLE(void)
 }
 
 /**
- * @brief LED3打开
- * @note 设置LED3引脚为高电平
+ * @brief LED3��
+ * @note ����LED3����Ϊ�ߵ�ƽ
  */
 void LED_03_ON(void)
 {
@@ -64,8 +64,8 @@ void LED_03_ON(void)
 }
 
 /**
- * @brief LED3关闭
- * @note 设置LED3引脚为低电平
+ * @brief LED3�ر�
+ * @note ����LED3����Ϊ�͵�ƽ
  */
 void LED_03_OFF(void)
 {
@@ -73,8 +73,8 @@ void LED_03_OFF(void)
 }
 
 /**
- * @brief LED3翻转
- * @note 翻转LED3引脚电平状态
+ * @brief LED3��ת
+ * @note ��תLED3���ŵ�ƽ״̬
  */
 void LED_03_TOGGLE(void)
 {

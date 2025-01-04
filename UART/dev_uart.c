@@ -1,17 +1,43 @@
 /**
- * @brief ä¸²å£é©±åŠ¨æ¨¡å—
- * @details æ”¯æŒä»¥ä¸‹åŠŸèƒ½:
- *          1. æ”¯æŒå¤šä¸ªä¸²å£åŒæ—¶å·¥ä½œ
- *          2. ä½¿ç”¨FIFOç¼“å†²åŒºç®¡ç†æ”¶å‘æ•°æ®
- *          3. æ”¯æŒDMAæ–¹å¼æ”¶å‘æ•°æ®
- *          4. æ”¯æŒä¸²å£æ³¢ç‰¹ç‡åŠ¨æ€é…ç½®
- *          5. æ”¯æŒç¼“å†²åŒºæ¸…ç©ºåŠŸèƒ½
- *          6. æ”¯æŒæ ¼å¼åŒ–æ‰“å°åŠŸèƒ½
- * @note    ç§»æ¤æ—¶éœ€è¦:
- *          1. ä¿®æ”¹ä¸²å£ç¼“å­˜å¤§å°å®šä¹‰(dev_uart.hä¸­çš„UART_xx_BUF_SIZE)
- *          2. ä¿®æ”¹ä¸²å£è®¾å¤‡å®ä¾‹(dev_uart.cä¸­çš„s_uart_dev)
- *          3. ä¿®æ”¹ä¸²å£å¥æŸ„(dev_uart.cä¸­çš„huartx)
- *          4. åœ¨ä¸­æ–­æœåŠ¡ç¨‹åºä¸­è°ƒç”¨uart_dmarx_done_isr()ç­‰å‡½æ•°
+ * @brief ´®¿ÚÇı¶¯Ä£¿é - »ùÓÚSTM32F4µÄUART/DMAÇı¶¯
+ * @details Ö÷Òª¹¦ÄÜ:
+ *          1. Ö§³ÖUART1/3/4/5¶à´®¿Ú²¢ĞĞ¹¤×÷
+ *          2. »ùÓÚFIFO»º³åÇøµÄÊÕ·¢¹ÜÀí
+ *          3. DMA·½Ê½ÊÕ·¢,Ö§³Ö´óÊı¾İÁ¿´«Êä
+ *          4. ¶¯Ì¬²¨ÌØÂÊÅäÖÃ, ×î´óÖ§³Ö1500000£¨1.5Mbps£©
+ *          5. »º³åÇøÇå¿Õ
+ *          6. ¸ñÊ½»¯´òÓ¡
+ * 
+ * @note    ÒÆÖ²ËµÃ÷:
+ *          1. ÅäÖÃÎÄ¼şĞŞ¸Ä:
+ *             - dev_uart.h: ĞŞ¸Ä"ÒÆÖ²ĞèÒªĞŞ¸ÄµÄºê¶¨Òå"
+ *                           ĞŞ¸Ä"ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯ÊıÉùÃ÷"
+ *             - bsp_uart.h: ĞŞ¸Ä"ÒÆÖ²ĞèÒªĞŞ¸ÄµÄºê¶¨Òå"
+ *          2. Ô´ÎÄ¼şĞŞ¸Ä:
+ *             - dev_uart.c: 
+ *               > Ôö¼õUART_HandleTypeDef, ÊÊÅäÊµ¼Ê´®¿Ú
+ *               > Ôö¼õ"´®¿Ú»º´æÄ£¿é", ÊÊÅäÊµ¼Ê´®¿Ú
+ *             - bsp_uart.c:
+ *               > Ôö¼õÏàÓ¦µÄ"UART_HandleTypeDef"ºÍ"DMA_HandleTypeDef", ÊÊÅäÊµ¼Ê´®¿Ú
+ *               > Ôö¼õº¯ÊıÖĞÏàÓ¦µÄ"case DEV_UARTx:", ÊÊÅäÊµ¼Ê´®¿Ú
+ *          3. ÖĞ¶ÏÅäÖÃ:
+ *             - stm32f4xx_it.c:
+ *               > ÔÚUARTÖĞ¶ÏÖĞµ÷ÓÃuart_dmarx_done_isrµÈº¯Êı
+ *               > ÔÚDMAÖĞ¶ÏÖĞµ÷ÓÃuart_dmatx_done_isrµÈº¯Êı
+ *               > ÔÚIDLEÖĞ¶ÏÖĞµ÷ÓÃuart_dmarx_idle_isrº¯Êı
+ *               > ÏêÇé¼û"stm32f4xx_it.c"
+ * 
+ * @usage   »ù±¾Ê¹ÓÃÁ÷³Ì:
+ *          1. ³õÊ¼»¯: uart_device_init()
+ *          2. Êı¾İ·¢ËÍ:
+ *             - Ô­Ê¼Êı¾İ: uartx_print() (x=1,3,4,5)
+ *             - ¸ñÊ½»¯: uartx_printf() (x=1,3,4,5)
+ *          3. Êı¾İ½ÓÊÕ:
+ *             - uart_read()´ÓFIFO¶ÁÈ¡Êı¾İ
+ *          4. ÆäËû¹¦ÄÜ:
+ *             - uart_set_baudrate()ĞŞ¸Ä²¨ÌØÂÊ
+ *             - uart_flush()Çå¿Õ½ÓÊÕ»º³åÇø
+ * 
  * @author  qlqqs
  * @date    2024.12.19
  */
@@ -19,13 +45,13 @@
 #include "main.h"
 #include "dev_uart.h"
 
-/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å˜é‡ ****************************/
+/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄ±äÁ¿ ****************************/
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart5;
 
-/* ä¸²å£ç¼“å­˜ */
+/* ´®¿Ú»º´æ */
 static uint8_t s_uart1_tx_buf[UART1_TX_BUF_SIZE];
 static uint8_t s_uart1_rx_buf[UART1_RX_BUF_SIZE];
 static uint8_t s_uart1_dmarx_buf[UART1_DMA_RX_BUF_SIZE] __attribute__((section(".ARM.__at_0x20000000")));
@@ -45,60 +71,60 @@ static uint8_t s_uart5_tx_buf[UART5_TX_BUF_SIZE];
 static uint8_t s_uart5_rx_buf[UART5_RX_BUF_SIZE];
 static uint8_t s_uart5_dmarx_buf[UART5_DMA_RX_BUF_SIZE];
 static uint8_t s_uart5_dmatx_buf[UART5_DMA_TX_BUF_SIZE];
+/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄ±äÁ¿ ****************************/
 
-/* ä¸²å£è®¾å¤‡å®ä¾‹ */
+/* ´®¿ÚÉè±¸ÊµÀı */
 static uart_device_t s_uart_dev[UART_DEVICE_ARRAY_NUM] = {0};
 
-/* æµ‹è¯• */
+/* ²âÊÔ */
 uint32_t s_UartTxRxCount[UART_COUNT_ARRAY_SIZE] = {0};
-/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å˜é‡ ****************************/
 
-/* fifoä¸Šé”å‡½æ•° */
+/* fifoÉÏËøº¯Êı */
 static void fifo_lock(void)
 {
     __disable_irq();
 }
 
-/* fifoè§£é”å‡½æ•° */
+/* fifo½âËøº¯Êı */
 static void fifo_unlock(void)
 {
     __enable_irq();
 }
 
-/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å‡½æ•° ****************************/
+/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯Êı ****************************/
 /**
- * @brief ä¸²å£è®¾å¤‡åˆå§‹åŒ–
- * @param uart_id ä¸²å£ID
+ * @brief ´®¿ÚÉè±¸³õÊ¼»¯
+ * @param uart_id ´®¿ÚID
  * @retval void
  */
 void uart_device_init(uint8_t uart_id)
 {
     if (uart_id == DEV_UART1)
     {
-        /* é…ç½®ä¸²å£1æ”¶å‘fifo */
+        /* ÅäÖÃ´®¿Ú1ÊÕ·¢fifo */
         fifo_register(&s_uart_dev[uart_id].tx_fifo, &s_uart1_tx_buf[0],
                       sizeof(s_uart1_tx_buf), NULL, NULL);
         fifo_register(&s_uart_dev[uart_id].rx_fifo, &s_uart1_rx_buf[0],
                       sizeof(s_uart1_rx_buf), fifo_lock, fifo_unlock);
 
-        /* é…ç½®ä¸²å£1 DMAæ”¶å‘buf */
+        /* ÅäÖÃ´®¿Ú1 DMAÊÕ·¢buf */
         s_uart_dev[uart_id].dmarx_buf = &s_uart1_dmarx_buf[0];
         s_uart_dev[uart_id].dmarx_buf_size = sizeof(s_uart1_dmarx_buf);
         s_uart_dev[uart_id].dmatx_buf = &s_uart1_dmatx_buf[0];
         s_uart_dev[uart_id].dmatx_buf_size = sizeof(s_uart1_dmatx_buf);
         uart_dma_init(uart_id, s_uart_dev[uart_id].dmarx_buf,
-                     s_uart_dev[uart_id].dmarx_buf_size);/* åªéœ€é…ç½®æ¥æ”¶æ¨¡å¼DMA,å‘é€æ¨¡å¼éœ€å‘é€æ•°æ®æ—¶æ‰é…ç½® */
+                     s_uart_dev[uart_id].dmarx_buf_size);/* Ö»ĞèÅäÖÃ½ÓÊÕÄ£Ê½DMA,·¢ËÍÄ£Ê½Ğè·¢ËÍÊı¾İÊ±²ÅÅäÖÃ */
         s_uart_dev[uart_id].status  = 0;
     }
     else if (uart_id == DEV_UART3)
     {
-        /* é…ç½®ä¸²å£3æ”¶å‘fifo */
+        /* ÅäÖÃ´®¿Ú3ÊÕ·¢fifo */
         fifo_register(&s_uart_dev[uart_id].tx_fifo, &s_uart3_tx_buf[0],
                       sizeof(s_uart3_tx_buf), fifo_lock, fifo_unlock);
         fifo_register(&s_uart_dev[uart_id].rx_fifo, &s_uart3_rx_buf[0],
                       sizeof(s_uart3_rx_buf), fifo_lock, fifo_unlock);
 
-        /* é…ç½®ä¸²å£3 DMAæ”¶å‘buf */
+        /* ÅäÖÃ´®¿Ú3 DMAÊÕ·¢buf */
         s_uart_dev[uart_id].dmarx_buf = &s_uart3_dmarx_buf[0];
         s_uart_dev[uart_id].dmarx_buf_size = sizeof(s_uart3_dmarx_buf);
         s_uart_dev[uart_id].dmatx_buf = &s_uart3_dmatx_buf[0];
@@ -109,13 +135,13 @@ void uart_device_init(uint8_t uart_id)
     }
     else if (uart_id == DEV_UART4)
     {
-        /* é…ç½®ä¸²å£4æ”¶å‘fifo */
+        /* ÅäÖÃ´®¿Ú4ÊÕ·¢fifo */
         fifo_register(&s_uart_dev[uart_id].tx_fifo, &s_uart4_tx_buf[0],
                       sizeof(s_uart4_tx_buf), fifo_lock, fifo_unlock);
         fifo_register(&s_uart_dev[uart_id].rx_fifo, &s_uart4_rx_buf[0],
                       sizeof(s_uart4_rx_buf), fifo_lock, fifo_unlock);
 
-        /* é…ç½®ä¸²å£4 DMAæ”¶å‘buf */
+        /* ÅäÖÃ´®¿Ú4 DMAÊÕ·¢buf */
         s_uart_dev[uart_id].dmarx_buf = &s_uart4_dmarx_buf[0];
         s_uart_dev[uart_id].dmarx_buf_size = sizeof(s_uart4_dmarx_buf);
         s_uart_dev[uart_id].dmatx_buf = &s_uart4_dmatx_buf[0];
@@ -126,13 +152,13 @@ void uart_device_init(uint8_t uart_id)
     }
     else if (uart_id == DEV_UART5)
     {
-        /* é…ç½®ä¸²å£5æ”¶å‘fifo */
+        /* ÅäÖÃ´®¿Ú5ÊÕ·¢fifo */
         fifo_register(&s_uart_dev[uart_id].tx_fifo, &s_uart5_tx_buf[0],
                       sizeof(s_uart5_tx_buf), fifo_lock, fifo_unlock);
         fifo_register(&s_uart_dev[uart_id].rx_fifo, &s_uart5_rx_buf[0],
                       sizeof(s_uart5_rx_buf), fifo_lock, fifo_unlock);
 
-        /* é…ç½®ä¸²å£5 DMAæ”¶å‘buf */
+        /* ÅäÖÃ´®¿Ú5 DMAÊÕ·¢buf */
         s_uart_dev[uart_id].dmarx_buf = &s_uart5_dmarx_buf[0];
         s_uart_dev[uart_id].dmarx_buf_size = sizeof(s_uart5_dmarx_buf);
         s_uart_dev[uart_id].dmatx_buf = &s_uart5_dmatx_buf[0];
@@ -142,14 +168,14 @@ void uart_device_init(uint8_t uart_id)
         s_uart_dev[uart_id].status  = 0;
     }       
 }
-/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å‡½æ•° ****************************/
+/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯Êı ****************************/
 
 /**
- * @brief  ä¸²å£å‘é€æ•°æ®æ¥å£,å®é™…æ˜¯å†™å…¥å‘é€fifo,å‘é€ç”±dmaå¤„ç†
- * @param uart_id ä¸²å£ID
- * @param buf å‘é€æ•°æ®ç¼“å­˜
- * @param size å‘é€æ•°æ®å¤§å°
- * @retval å®é™…å†™å…¥çš„å­—èŠ‚æ•°
+ * @brief  ´®¿Ú·¢ËÍÊı¾İ½Ó¿Ú,Êµ¼ÊÊÇĞ´Èë·¢ËÍfifo,·¢ËÍÓÉdma´¦Àí
+ * @param uart_id ´®¿ÚID
+ * @param buf ·¢ËÍÊı¾İ»º´æ
+ * @param size ·¢ËÍÊı¾İ´óĞ¡
+ * @retval Êµ¼ÊĞ´ÈëµÄ×Ö½ÚÊı
  */
 uint16_t uart_write(uint8_t uart_id, const uint8_t *buf, uint16_t size)
 {
@@ -157,11 +183,11 @@ uint16_t uart_write(uint8_t uart_id, const uint8_t *buf, uint16_t size)
 }
 
 /**
- * @brief  ä¸²å£è¯»å–æ•°æ®æ¥å£,å®é™…æ˜¯ä»æ¥æ”¶fifoè¯»å–
- * @param uart_id ä¸²å£ID
- * @param buf æ¥æ”¶æ•°æ®ç¼“å­˜
- * @param size æ¥æ”¶æ•°æ®å¤§å°
- * @retval å®é™…è¯»å–çš„å­—èŠ‚æ•°
+ * @brief  ´®¿Ú¶ÁÈ¡Êı¾İ½Ó¿Ú,Êµ¼ÊÊÇ´Ó½ÓÊÕfifo¶ÁÈ¡
+ * @param uart_id ´®¿ÚID
+ * @param buf ½ÓÊÕÊı¾İ»º´æ
+ * @param size ½ÓÊÕÊı¾İ´óĞ¡
+ * @retval Êµ¼Ê¶ÁÈ¡µÄ×Ö½ÚÊı
  */
 uint16_t uart_read(uint8_t uart_id, uint8_t *buf, uint16_t size)
 {
@@ -169,8 +195,8 @@ uint16_t uart_read(uint8_t uart_id, uint8_t *buf, uint16_t size)
 }
 
 /**
- * @brief  ä¸²å£dmaæ¥æ”¶å®Œæˆä¸­æ–­å¤„ç†
- * @param uart_id ä¸²å£ID
+ * @brief  ´®¿Údma½ÓÊÕÍê³ÉÖĞ¶Ï´¦Àí
+ * @param uart_id ´®¿ÚID
  * @retval void
  */
 void uart_dmarx_done_isr(uint8_t uart_id)
@@ -187,8 +213,8 @@ void uart_dmarx_done_isr(uint8_t uart_id)
 }
 
 /**
- * @brief  ä¸²å£dmaæ¥æ”¶ç¼“å­˜å¤§å°ä¸€åŠæ•°æ®ä¸­æ–­å¤„ç†
- * @param uart_id ä¸²å£ID
+ * @brief  ´®¿Údma½ÓÊÕ»º´æ´óĞ¡Ò»°ëÊı¾İÖĞ¶Ï´¦Àí
+ * @param uart_id ´®¿ÚID
  * @retval void
  */
 void uart_dmarx_half_done_isr(uint8_t uart_id)
@@ -207,8 +233,8 @@ void uart_dmarx_half_done_isr(uint8_t uart_id)
 }
 
 /**
- * @brief  ä¸²å£ç©ºé—²ä¸­æ–­å¤„ç†
- * @param uart_id ä¸²å£ID
+ * @brief  ´®¿Ú¿ÕÏĞÖĞ¶Ï´¦Àí
+ * @param uart_id ´®¿ÚID
  * @retval void
  */
 void uart_dmarx_idle_isr(uint8_t uart_id)
@@ -226,18 +252,18 @@ void uart_dmarx_idle_isr(uint8_t uart_id)
 }
 
 /**
- * @brief  ä¸²å£dmaå‘é€å®Œæˆä¸­æ–­å¤„ç†
- * @param uart_id ä¸²å£ID
+ * @brief  ´®¿Údma·¢ËÍÍê³ÉÖĞ¶Ï´¦Àí
+ * @param uart_id ´®¿ÚID
  * @retval void
  */
 void uart_dmatx_done_isr(uint8_t uart_id)
 {
-    s_uart_dev[uart_id].status = 0;	/* DMAå‘é€ç©ºé—² */
+    s_uart_dev[uart_id].status = 0;	/* DMA·¢ËÍ¿ÕÏĞ */
 }
 
 /**
- * @brief  å¾ªç¯ä»ä¸²å£å‘é€fifoè¯»å‡ºæ•°æ®,æ”¾ç½®äºdmaå‘é€ç¼“å­˜,å¹¶å¯åŠ¨dmaä¼ è¾“
- * @param uart_id ä¸²å£ID
+ * @brief  Ñ­»·´Ó´®¿Ú·¢ËÍfifo¶Á³öÊı¾İ,·ÅÖÃÓÚdma·¢ËÍ»º´æ,²¢Æô¶¯dma´«Êä
+ * @param uart_id ´®¿ÚID
  * @retval void
  */
 void uart_poll_dma_tx(uint8_t uart_id)
@@ -254,23 +280,23 @@ void uart_poll_dma_tx(uint8_t uart_id)
     {
         s_UartTxRxCount[uart_id * 2 + 0] += size;
 
-        s_uart_dev[uart_id].status = 0x01;	/* DMAå‘é€çŠ¶æ€ */
+        s_uart_dev[uart_id].status = 0x01;	/* DMA·¢ËÍ×´Ì¬ */
         bsp_uart_dmatx_config(uart_id, s_uart_dev[uart_id].dmatx_buf, size);
     }
 }
 
 /**
- * @brief  è®¾ç½®ä¸²å£æ³¢ç‰¹ç‡
- * @param  uart_id: ä¸²å£ID (DEV_UART1, DEV_UART3ç­‰)
- * @param  baudrate: è¦è®¾ç½®çš„æ³¢ç‰¹ç‡å€¼
- * @retval UART_SET_BAUDRATE_OK: æˆåŠŸ
- *         UART_SET_BAUDRATE_ERROR: å¤±è´¥
+ * @brief  ÉèÖÃ´®¿Ú²¨ÌØÂÊ
+ * @param  uart_id: ´®¿ÚID (DEV_UART1, DEV_UART3µÈ)
+ * @param  baudrate: ÒªÉèÖÃµÄ²¨ÌØÂÊÖµ
+ * @retval UART_SET_BAUDRATE_OK: ³É¹¦
+ *         UART_SET_BAUDRATE_ERROR: Ê§°Ü
  */
 uint8_t uart_set_baudrate(uint8_t uart_id, uint32_t baudrate)
 {
     UART_HandleTypeDef *huart = NULL;
     
-    // è·å–å¯¹åº”ä¸²å£å¥æŸ„
+    // »ñÈ¡¶ÔÓ¦´®¿Ú¾ä±ú
     switch(uart_id) 
     {
         case DEV_UART1:
@@ -290,44 +316,44 @@ uint8_t uart_set_baudrate(uint8_t uart_id, uint32_t baudrate)
             break;
             
         default:
-            return UART_SET_BAUDRATE_ERROR;  // æ— æ•ˆçš„ä¸²å£ID
+            return UART_SET_BAUDRATE_ERROR;  // ÎŞĞ§µÄ´®¿ÚID
     }
     
-    // åœæ­¢å½“å‰çš„DMAä¼ è¾“
+    // Í£Ö¹µ±Ç°µÄDMA´«Êä
     HAL_UART_DMAStop(huart);
     
-    // æ›´æ–°æ³¢ç‰¹ç‡
+    // ¸üĞÂ²¨ÌØÂÊ
     huart->Init.BaudRate = baudrate;
     if (HAL_UART_Init(huart) != HAL_OK)
     {
         return UART_SET_BAUDRATE_ERROR;
     }
     
-    // é‡æ–°é…ç½®DMAæ¥æ”¶
+    // ÖØĞÂÅäÖÃDMA½ÓÊÕ
     uart_device_init(uart_id);
     
     return UART_SET_BAUDRATE_OK;
 }
 
 /**
- * @brief  æ¸…ç©ºä¸²å£ç¼“å†²åŒº
- * @param  uart_id: ä¸²å£ID (DEV_UART1, DEV_UART3ç­‰)
- * @param  config: æ¸…ç©ºé…ç½®å‚æ•°,NULLåˆ™ä½¿ç”¨é»˜è®¤é…ç½®
- * @retval uart_flush_status_t: æ¸…ç©ºçŠ¶æ€
+ * @brief  Çå¿Õ´®¿Ú»º³åÇø
+ * @param  uart_id: ´®¿ÚID (DEV_UART1, DEV_UART3µÈ)
+ * @param  config: Çå¿ÕÅäÖÃ²ÎÊı,NULLÔòÊ¹ÓÃÄ¬ÈÏÅäÖÃ
+ * @retval uart_flush_status_t: Çå¿Õ×´Ì¬
  */
 uart_flush_status_t uart_flush_buffer(uint8_t uart_id, const uart_flush_config_t *config)
 {
-    // é»˜è®¤é…ç½®
+    // Ä¬ÈÏÅäÖÃ
     static const uart_flush_config_t default_config = {
-        .timeout_ms = 1000,  // é»˜è®¤1ç§’è¶…æ—¶
-        .chunk_size = 64,    // é»˜è®¤æ¯æ¬¡è¯»å–64å­—èŠ‚
-        .delay_ms = 1        // é»˜è®¤1mså»¶æ—¶
+        .timeout_ms = 1000,  // Ä¬ÈÏ1Ãë³¬Ê±
+        .chunk_size = 64,    // Ä¬ÈÏÃ¿´Î¶ÁÈ¡64×Ö½Ú
+        .delay_ms = 1        // Ä¬ÈÏ1msÑÓÊ±
     };
     
-    // ä½¿ç”¨ä¼ å…¥çš„é…ç½®æˆ–é»˜è®¤é…ç½®
+    // Ê¹ÓÃ´«ÈëµÄÅäÖÃ»òÄ¬ÈÏÅäÖÃ
     const uart_flush_config_t *cfg = config ? config : &default_config;
     
-    // ä½¿ç”¨æ ˆä¸Šåˆ†é…çš„å›ºå®šå¤§å°ç¼“å†²åŒº,é¿å…åŠ¨æ€å†…å­˜åˆ†é…
+    // Ê¹ÓÃÕ»ÉÏ·ÖÅäµÄ¹Ì¶¨´óĞ¡»º³åÇø,±ÜÃâ¶¯Ì¬ÄÚ´æ·ÖÅä
     uint8_t temp_buf[64];
     uint16_t read_size = cfg->chunk_size > sizeof(temp_buf) ? 
                         sizeof(temp_buf) : cfg->chunk_size;
@@ -336,18 +362,18 @@ uart_flush_status_t uart_flush_buffer(uint8_t uart_id, const uart_flush_config_t
     uint32_t total_bytes = 0;
     
     while(1) {
-        // æ£€æŸ¥è¶…æ—¶
+        // ¼ì²é³¬Ê±
         if(HAL_GetTick() - start_time > cfg->timeout_ms) {
             return UART_FLUSH_TIMEOUT;
         }
         
-        // è¯»å–æ•°æ®
+        // ¶ÁÈ¡Êı¾İ
         uint16_t len = uart_read(uart_id, temp_buf, read_size);
         if(len > 0) {
             total_bytes += len;
             HAL_Delay(cfg->delay_ms);
         } else {
-            // æ²¡æœ‰æ›´å¤šæ•°æ®,æ¸…ç©ºå®Œæˆ
+            // Ã»ÓĞ¸ü¶àÊı¾İ,Çå¿ÕÍê³É
             break;
         }
     }
@@ -356,158 +382,216 @@ uart_flush_status_t uart_flush_buffer(uint8_t uart_id, const uart_flush_config_t
 }
 
 /**
- * @brief  ä½¿ç”¨é»˜è®¤å‚æ•°æ¸…ç©ºä¸²å£ç¼“å†²åŒº
- * @param  uart_id: ä¸²å£ID (DEV_UART1, DEV_UART3ç­‰)
- * @retval uart_flush_status_t: æ¸…ç©ºçŠ¶æ€
+ * @brief  Ê¹ÓÃÄ¬ÈÏ²ÎÊıÇå¿Õ´®¿Ú»º³åÇø
+ * @param  uart_id: ´®¿ÚID (DEV_UART1, DEV_UART3µÈ)
+ * @retval uart_flush_status_t: Çå¿Õ×´Ì¬
  */
 uart_flush_status_t uart_flush(uint8_t uart_id)
 {
     return uart_flush_buffer(uart_id, NULL);
 }
 
-/**
- * @brief  ä¸²å£1ç›´æ¥è¾“å‡º(ä¸æ ¼å¼åŒ–)å‡½æ•°
- * @param  str: è¦è¾“å‡ºçš„å­—ç¬¦ä¸²
- * @param  len: è¦è¾“å‡ºçš„å­—ç¬¦ä¸²é•¿åº¦
- * @retval å®é™…å‘é€çš„å­—èŠ‚æ•°
+/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯Êı ****************************/
+ * @brief  ´®¿Ú1Ö±½ÓÊä³ö(²»¸ñÊ½»¯)º¯Êı
+ * @param  str: ÒªÊä³öµÄ×Ö·û´®
+ * @param  len: ÒªÊä³öµÄ×Ö·û´®³¤¶È
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
  */
 int uart1_print(const char *str, uint16_t len)
 {
     int ret;
     
-    // ç›´æ¥ä½¿ç”¨uart_writeå‘é€æ•°æ®
+    // Ö±½ÓÊ¹ÓÃuart_write·¢ËÍÊı¾İ
     ret = uart_write(DEV_UART1, (uint8_t*)str, len);
     
-    // å¯åŠ¨DMAä¼ è¾“
+    // Æô¶¯DMA´«Êä
     uart_poll_dma_tx(DEV_UART1);
     
     return ret;
 }
 
 /**
- * @brief  ä¸²å£1æ ¼å¼åŒ–è¾“å‡ºå‡½æ•°
- * @param  format: æ ¼å¼åŒ–å­—ç¬¦ä¸²
- * @param  ...: å¯å˜å‚æ•°
- * @retval å®é™…å‘é€çš„å­—èŠ‚æ•°
+ * @brief  ´®¿Ú1¸ñÊ½»¯Êä³öº¯Êı
+ * @param  format: ¸ñÊ½»¯×Ö·û´®
+ * @param  ...: ¿É±ä²ÎÊı
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
  */
 int uart1_printf(const char *format, ...)
 {
     va_list args;
-    uint8_t buf[512];  // å¢å¤§ç¼“å†²åŒºä»¥æ”¯æŒæ›´é•¿çš„æ•°æ®
+    uint8_t buf[512];  // Ôö´ó»º³åÇøÒÔÖ§³Ö¸ü³¤µÄÊı¾İ
     int length;
     uint16_t ret;
 
-    // æ ¼å¼åŒ–å­—ç¬¦ä¸²
+    // ¸ñÊ½»¯×Ö·û´®
     va_start(args, format);
     length = vsnprintf((char *)buf, sizeof(buf), format, args);
     va_end(args);
 
-    // æ£€æŸ¥ç¼“å†²åŒºæ˜¯å¦æº¢å‡º
+    // ¼ì²é»º³åÇøÊÇ·ñÒç³ö
     if (length < 0 || length >= sizeof(buf)) {
         return 0;
     }
 
-    // å‘é€æ ¼å¼åŒ–åçš„æ•°æ®
+    // ·¢ËÍ¸ñÊ½»¯ºóµÄÊı¾İ
     ret = uart_write(DEV_UART1, buf, length);
     
-    // æ¿€æ´»DMAä¼ è¾“
+    // ¼¤»îDMA´«Êä
     uart_poll_dma_tx(DEV_UART1);
     
     return ret;
 }
 
 /**
- * @brief  ä¸²å£3æ ¼å¼åŒ–è¾“å‡ºå‡½æ•°
- * @param  format: æ ¼å¼åŒ–å­—ç¬¦ä¸²
- * @param  ...: å¯å˜å‚æ•°
- * @retval å®é™…å‘é€çš„å­—èŠ‚æ•°
+ * @brief  ´®¿Ú3Ö±½ÓÊä³ö(²»¸ñÊ½»¯)º¯Êı
+ * @param  str: ÒªÊä³öµÄ×Ö·û´®
+ * @param  len: ÒªÊä³öµÄ×Ö·û´®³¤¶È
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
  */
-int uart3_printf(const char *format, ...)
+int uart3_print(const char *str, uint16_t len)
 {
-    va_list args;
-    uint8_t buf[512];  // å¢å¤§ç¼“å†²åŒºä»¥æ”¯æŒæ›´é•¿çš„æ•°æ®
-    int length;
-    uint16_t ret;
-
-    // æ ¼å¼åŒ–å­—ç¬¦ä¸²
-    va_start(args, format);
-    length = vsnprintf((char *)buf, sizeof(buf), format, args);
-    va_end(args);
-
-    // æ£€æŸ¥ç¼“å†²åŒºæ˜¯å¦æº¢å‡º
-    if (length < 0 || length >= sizeof(buf)) {
-        return 0;
-    }
-
-    // å‘é€æ ¼å¼åŒ–åçš„æ•°æ®
-    ret = uart_write(DEV_UART3, buf, length);
+    int ret;
     
-    // æ¿€æ´»DMAä¼ è¾“
+    // Ö±½ÓÊ¹ÓÃuart_write·¢ËÍÊı¾İ
+    ret = uart_write(DEV_UART3, (uint8_t*)str, len);
+    
+    // Æô¶¯DMA´«Êä
     uart_poll_dma_tx(DEV_UART3);
     
     return ret;
 }
 
 /**
- * @brief  ä¸²å£4æ ¼å¼åŒ–è¾“å‡ºå‡½æ•°
- * @param  format: æ ¼å¼åŒ–å­—ç¬¦ä¸²
- * @param  ...: å¯å˜å‚æ•°
- * @retval å®é™…å‘é€çš„å­—èŠ‚æ•°
+ * @brief  ´®¿Ú3¸ñÊ½»¯Êä³öº¯Êı
+ * @param  format: ¸ñÊ½»¯×Ö·û´®
+ * @param  ...: ¿É±ä²ÎÊı
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
  */
-int uart4_printf(const char *format, ...)
+int uart3_printf(const char *format, ...)
 {
     va_list args;
-    uint8_t buf[512];  // å¢å¤§ç¼“å†²åŒºä»¥æ”¯æŒæ›´é•¿çš„æ•°æ®
+    uint8_t buf[512];  // Ôö´ó»º³åÇøÒÔÖ§³Ö¸ü³¤µÄÊı¾İ
     int length;
     uint16_t ret;
 
-    // æ ¼å¼åŒ–å­—ç¬¦ä¸²
+    // ¸ñÊ½»¯×Ö·û´®
     va_start(args, format);
     length = vsnprintf((char *)buf, sizeof(buf), format, args);
     va_end(args);
 
-    // æ£€æŸ¥ç¼“å†²åŒºæ˜¯å¦æº¢å‡º
+    // ¼ì²é»º³åÇøÊÇ·ñÒç³ö
     if (length < 0 || length >= sizeof(buf)) {
         return 0;
     }
 
-    // å‘é€æ ¼å¼åŒ–åçš„æ•°æ®
-    ret = uart_write(DEV_UART4, buf, length);
+    // ·¢ËÍ¸ñÊ½»¯ºóµÄÊı¾İ
+    ret = uart_write(DEV_UART3, buf, length);
     
-    // æ¿€æ´»DMAä¼ è¾“
+    // ¼¤»îDMA´«Êä
+    uart_poll_dma_tx(DEV_UART3);
+    
+    return ret;
+}
+
+/**
+ * @brief  ´®¿Ú4Ö±½ÓÊä³ö(²»¸ñÊ½»¯)º¯Êı
+ * @param  str: ÒªÊä³öµÄ×Ö·û´®
+ * @param  len: ÒªÊä³öµÄ×Ö·û´®³¤¶È
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
+ */
+int uart4_print(const char *str, uint16_t len)
+{
+    int ret;
+    
+    // Ö±½ÓÊ¹ÓÃuart_write·¢ËÍÊı¾İ
+    ret = uart_write(DEV_UART4, (uint8_t*)str, len);
+    
+    // Æô¶¯DMA´«Êä
     uart_poll_dma_tx(DEV_UART4);
     
     return ret;
 }
 
 /**
- * @brief  ä¸²å£5æ ¼å¼åŒ–è¾“å‡ºå‡½æ•°
- * @param  format: æ ¼å¼åŒ–å­—ç¬¦ä¸²
- * @param  ...: å¯å˜å‚æ•°
- * @retval å®é™…å‘é€çš„å­—èŠ‚æ•°
+ * @brief  ´®¿Ú4¸ñÊ½»¯Êä³öº¯Êı
+ * @param  format: ¸ñÊ½»¯×Ö·û´®
+ * @param  ...: ¿É±ä²ÎÊı
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
  */
-int uart5_printf(const char *format, ...)
+int uart4_printf(const char *format, ...)
 {
     va_list args;
-    uint8_t buf[512];  // å¢å¤§ç¼“å†²åŒºä»¥æ”¯æŒæ›´é•¿çš„æ•°æ®
+    uint8_t buf[512];  // Ôö´ó»º³åÇøÒÔÖ§³Ö¸ü³¤µÄÊı¾İ
     int length;
     uint16_t ret;
 
-    // æ ¼å¼åŒ–å­—ç¬¦ä¸²
+    // ¸ñÊ½»¯×Ö·û´®
     va_start(args, format);
     length = vsnprintf((char *)buf, sizeof(buf), format, args);
     va_end(args);
 
-    // æ£€æŸ¥ç¼“å†²åŒºæ˜¯å¦æº¢å‡º
+    // ¼ì²é»º³åÇøÊÇ·ñÒç³ö
     if (length < 0 || length >= sizeof(buf)) {
         return 0;
     }
 
-    // å‘é€æ ¼å¼åŒ–åçš„æ•°æ®
-    ret = uart_write(DEV_UART5, buf, length);
+    // ·¢ËÍ¸ñÊ½»¯ºóµÄÊı¾İ
+    ret = uart_write(DEV_UART4, buf, length);
     
-    // æ¿€æ´»DMAä¼ è¾“
+    // ¼¤»îDMA´«Êä
+    uart_poll_dma_tx(DEV_UART4);
+    
+    return ret;
+}
+
+/**
+ * @brief  ´®¿Ú5Ö±½ÓÊä³ö(²»¸ñÊ½»¯)º¯Êı
+ * @param  str: ÒªÊä³öµÄ×Ö·û´®
+ * @param  len: ÒªÊä³öµÄ×Ö·û´®³¤¶È
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
+ */
+int uart5_print(const char *str, uint16_t len)
+{
+    int ret;
+    
+    // Ö±½ÓÊ¹ÓÃuart_write·¢ËÍÊı¾İ
+    ret = uart_write(DEV_UART5, (uint8_t*)str, len);
+    
+    // Æô¶¯DMA´«Êä
     uart_poll_dma_tx(DEV_UART5);
     
     return ret;
 }
+
+/**
+ * @brief  ´®¿Ú5¸ñÊ½»¯Êä³öº¯Êı
+ * @param  format: ¸ñÊ½»¯×Ö·û´®
+ * @param  ...: ¿É±ä²ÎÊı
+ * @retval Êµ¼Ê·¢ËÍµÄ×Ö½ÚÊı
+ */
+int uart5_printf(const char *format, ...)
+{
+    va_list args;
+    uint8_t buf[512];  // Ôö´ó»º³åÇøÒÔÖ§³Ö¸ü³¤µÄÊı¾İ
+    int length;
+    uint16_t ret;
+
+    // ¸ñÊ½»¯×Ö·û´®
+    va_start(args, format);
+    length = vsnprintf((char *)buf, sizeof(buf), format, args);
+    va_end(args);
+
+    // ¼ì²é»º³åÇøÊÇ·ñÒç³ö
+    if (length < 0 || length >= sizeof(buf)) {
+        return 0;
+    }
+
+    // ·¢ËÍ¸ñÊ½»¯ºóµÄÊı¾İ
+    ret = uart_write(DEV_UART5, buf, length);
+    
+    // ¼¤»îDMA´«Êä
+    uart_poll_dma_tx(DEV_UART5);
+    
+    return ret;
+}
+/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯Êı ****************************/
