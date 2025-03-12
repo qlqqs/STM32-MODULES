@@ -26,7 +26,7 @@
  *               > 在DMA中断中调用uart_dmatx_done_isr等函数
  *               > 在IDLE中断中调用uart_dmarx_idle_isr函数
  *               > 详情见"stm32f4xx_it.c"
-  *          4. STM32CubeMX中DMA的RX应改成回环
+ *          4. STM32CubeMX中DMA的RX应改成回环
  * 
  * @usage   基本使用流程:
  *          1. 初始化: uart_device_init()
