@@ -26,7 +26,6 @@
  *               > 在DMA中断中调用uart_dmatx_done_isr等函数
  *               > 在IDLE中断中调用uart_dmarx_idle_isr函数
  *               > 详情见"stm32f4xx_it.c"
- *          4. STM32CubeMX中DMA的RX应改成回环
  * 
  * @usage   基本使用流程:
  *          1. 初始化: uart_device_init()
@@ -38,6 +37,7 @@
  *          4. 其他功能:
  *             - uart_set_baudrate()修改波特率
  *             - uart_flush()清空接收缓冲区
+ *          4. STM32CubeMX中DMA的RX应改成回环
  * 
  * @author  qlqqs
  * @date    2024.12.19
@@ -393,14 +393,18 @@ uart_flush_status_t uart_flush(uint8_t uart_id)
 }
 
 /***************************** 移植需要修改的函数 ****************************/
+/*
  * @brief  串口1直接输出(不格式化)函数
  * @param  str: 要输出的字符串
- * @param  len: 要输出的字符串长度
  * @retval 实际发送的字节数
  */
-int uart1_print(const char *str, uint16_t len)
+int uart1_print(const char *str)
 {
     int ret;
+    uint16_t len;
+    
+    // 计算字符串长度
+    len = strlen(str);
     
     // 直接使用uart_write发送数据
     ret = uart_write(DEV_UART1, (uint8_t*)str, len);
@@ -412,187 +416,165 @@ int uart1_print(const char *str, uint16_t len)
 }
 
 /**
- * @brief  串口1格式化输出函数
+ * @brief  串口1格式化打印字符串
  * @param  format: 格式化字符串
  * @param  ...: 可变参数
- * @retval 实际发送的字节数
+ * @retval 打印的字符数量
  */
 int uart1_printf(const char *format, ...)
 {
+    char buf[256];  // 定义一个足够大的缓冲区
     va_list args;
-    uint8_t buf[512];  // 增大缓冲区以支持更长的数据
-    int length;
-    uint16_t ret;
+    int len;
 
-    // 格式化字符串
     va_start(args, format);
-    length = vsnprintf((char *)buf, sizeof(buf), format, args);
+    len = vsnprintf(buf, sizeof(buf), format, args);
     va_end(args);
 
-    // 检查缓冲区是否溢出
-    if (length < 0 || length >= sizeof(buf)) {
-        return 0;
+    // 检查格式化是否成功
+    if (len > 0)
+    {
+        // 如果格式化成功，通过 uart1_print 发送
+        return uart1_print(buf);
     }
+    
+    return 0;
+}
 
-    // 发送格式化后的数据
-    ret = uart_write(DEV_UART1, buf, length);
+/**
+ * @brief  串口1读取函数，从接收缓冲区读取数据
+ * @param  buf: 数据存储缓冲区
+ * @retval 实际读取的字节数
+ * @note   使用内置默认大小(256字节)读取数据
+ */
+uint16_t uart1_read(uint8_t *buf)
+{
+    uint16_t READ_BUF_SIZE = 256;
     
-    // 激活DMA传输
-    uart_poll_dma_tx(DEV_UART1);
-    
-    return ret;
+    // 返回实际读取的字节数，方便调用者知道读取了多少数据
+    return uart_read(DEV_UART1, buf, READ_BUF_SIZE);
 }
 
 /**
  * @brief  串口3直接输出(不格式化)函数
  * @param  str: 要输出的字符串
- * @param  len: 要输出的字符串长度
  * @retval 实际发送的字节数
  */
-int uart3_print(const char *str, uint16_t len)
+int uart3_print(const char *str)
 {
     int ret;
+    uint16_t len;
     
-    // 直接使用uart_write发送数据
+    len = strlen(str);
     ret = uart_write(DEV_UART3, (uint8_t*)str, len);
-    
-    // 启动DMA传输
     uart_poll_dma_tx(DEV_UART3);
     
     return ret;
 }
 
 /**
- * @brief  串口3格式化输出函数
+ * @brief  串口3格式化打印字符串
  * @param  format: 格式化字符串
  * @param  ...: 可变参数
- * @retval 实际发送的字节数
+ * @retval 打印的字符数量
  */
 int uart3_printf(const char *format, ...)
 {
+    char buf[256];
     va_list args;
-    uint8_t buf[512];  // 增大缓冲区以支持更长的数据
-    int length;
-    uint16_t ret;
+    int len;
 
-    // 格式化字符串
     va_start(args, format);
-    length = vsnprintf((char *)buf, sizeof(buf), format, args);
+    len = vsnprintf(buf, sizeof(buf), format, args);
     va_end(args);
 
-    // 检查缓冲区是否溢出
-    if (length < 0 || length >= sizeof(buf)) {
-        return 0;
+    if (len > 0)
+    {
+        return uart3_print(buf);
     }
-
-    // 发送格式化后的数据
-    ret = uart_write(DEV_UART3, buf, length);
     
-    // 激活DMA传输
-    uart_poll_dma_tx(DEV_UART3);
-    
-    return ret;
+    return 0;
 }
 
 /**
  * @brief  串口4直接输出(不格式化)函数
  * @param  str: 要输出的字符串
- * @param  len: 要输出的字符串长度
  * @retval 实际发送的字节数
  */
-int uart4_print(const char *str, uint16_t len)
+int uart4_print(const char *str)
 {
     int ret;
+    uint16_t len;
     
-    // 直接使用uart_write发送数据
+    len = strlen(str);
     ret = uart_write(DEV_UART4, (uint8_t*)str, len);
-    
-    // 启动DMA传输
     uart_poll_dma_tx(DEV_UART4);
     
     return ret;
 }
 
 /**
- * @brief  串口4格式化输出函数
+ * @brief  串口4格式化打印字符串
  * @param  format: 格式化字符串
  * @param  ...: 可变参数
- * @retval 实际发送的字节数
+ * @retval 打印的字符数量
  */
 int uart4_printf(const char *format, ...)
 {
+    char buf[256];
     va_list args;
-    uint8_t buf[512];  // 增大缓冲区以支持更长的数据
-    int length;
-    uint16_t ret;
+    int len;
 
-    // 格式化字符串
     va_start(args, format);
-    length = vsnprintf((char *)buf, sizeof(buf), format, args);
+    len = vsnprintf(buf, sizeof(buf), format, args);
     va_end(args);
 
-    // 检查缓冲区是否溢出
-    if (length < 0 || length >= sizeof(buf)) {
-        return 0;
+    if (len > 0)
+    {
+        return uart4_print(buf);
     }
-
-    // 发送格式化后的数据
-    ret = uart_write(DEV_UART4, buf, length);
     
-    // 激活DMA传输
-    uart_poll_dma_tx(DEV_UART4);
-    
-    return ret;
+    return 0;
 }
 
 /**
  * @brief  串口5直接输出(不格式化)函数
  * @param  str: 要输出的字符串
- * @param  len: 要输出的字符串长度
  * @retval 实际发送的字节数
  */
-int uart5_print(const char *str, uint16_t len)
+int uart5_print(const char *str)
 {
     int ret;
+    uint16_t len;
     
-    // 直接使用uart_write发送数据
+    len = strlen(str);
     ret = uart_write(DEV_UART5, (uint8_t*)str, len);
-    
-    // 启动DMA传输
     uart_poll_dma_tx(DEV_UART5);
     
     return ret;
 }
 
 /**
- * @brief  串口5格式化输出函数
+ * @brief  串口5格式化打印字符串
  * @param  format: 格式化字符串
  * @param  ...: 可变参数
- * @retval 实际发送的字节数
+ * @retval 打印的字符数量
  */
 int uart5_printf(const char *format, ...)
 {
+    char buf[256];
     va_list args;
-    uint8_t buf[512];  // 增大缓冲区以支持更长的数据
-    int length;
-    uint16_t ret;
+    int len;
 
-    // 格式化字符串
     va_start(args, format);
-    length = vsnprintf((char *)buf, sizeof(buf), format, args);
+    len = vsnprintf(buf, sizeof(buf), format, args);
     va_end(args);
 
-    // 检查缓冲区是否溢出
-    if (length < 0 || length >= sizeof(buf)) {
-        return 0;
+    if (len > 0)
+    {
+        return uart5_print(buf);
     }
-
-    // 发送格式化后的数据
-    ret = uart_write(DEV_UART5, buf, length);
     
-    // 激活DMA传输
-    uart_poll_dma_tx(DEV_UART5);
-    
-    return ret;
+    return 0;
 }
 /***************************** 移植需要修改的函数 ****************************/
