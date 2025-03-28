@@ -2,7 +2,7 @@
 #include "bsp_uart.h"
 #include "stm32f4xx_hal.h"
 
-/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄ±äÁ¿ ****************************/
+/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å˜é‡ ****************************/
 extern UART_HandleTypeDef huart1;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart1_rx;
@@ -18,25 +18,25 @@ extern DMA_HandleTypeDef hdma_uart4_rx;
 extern UART_HandleTypeDef huart5;
 extern DMA_HandleTypeDef hdma_uart5_tx;
 extern DMA_HandleTypeDef hdma_uart5_rx;
-/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄ±äÁ¿ ****************************/
+/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å˜é‡ ****************************/
 
-/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯Êı ****************************/
+/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å‡½æ•° ****************************/
 /**
- * @brief DMAÅäÖÃÓÃÓÚUART·¢ËÍ
- * @param uart_id ´®¿ÚID
- * @param mem_addr ·¢ËÍ»º´æµØÖ·
- * @param mem_size ·¢ËÍ»º´æ´óĞ¡
+ * @brief DMAé…ç½®ç”¨äºUARTå‘é€
+ * @param uart_id ä¸²å£ID
+ * @param mem_addr å‘é€ç¼“å­˜åœ°å€
+ * @param mem_size å‘é€ç¼“å­˜å¤§å°
  * @retval void
  */
 void bsp_uart_dmatx_config(uint8_t uart_id, uint8_t *mem_addr, uint32_t mem_size)
 {
     switch(uart_id) {
         case DEV_UART1:
-            /* Í£Ö¹DMA´«Êä */
+            /* åœæ­¢DMAä¼ è¾“ */
             HAL_DMA_Abort(&hdma_usart1_tx);
-            /* ÅäÖÃDMAÄÚ´æµØÖ·ºÍ´«Êä³¤¶È */
+            /* é…ç½®DMAå†…å­˜åœ°å€å’Œä¼ è¾“é•¿åº¦ */
             HAL_DMA_Start_IT(&hdma_usart1_tx, (uint32_t)mem_addr, (uint32_t)&huart1.Instance->DR, mem_size);
-            /* Ê¹ÄÜUARTµÄDMA·¢ËÍ */
+            /* ä½¿èƒ½UARTçš„DMAå‘é€ */
             SET_BIT(huart1.Instance->CR3, USART_CR3_DMAT);
             break;
             
@@ -61,21 +61,21 @@ void bsp_uart_dmatx_config(uint8_t uart_id, uint8_t *mem_addr, uint32_t mem_size
 }
 
 /**
- * @brief DMAÅäÖÃÓÃÓÚUART½ÓÊÕ
- * @param uart_id ´®¿ÚID
- * @param mem_addr ½ÓÊÕ»º´æµØÖ·
- * @param mem_size ½ÓÊÕ»º´æ´óĞ¡
+ * @brief DMAé…ç½®ç”¨äºUARTæ¥æ”¶
+ * @param uart_id ä¸²å£ID
+ * @param mem_addr æ¥æ”¶ç¼“å­˜åœ°å€
+ * @param mem_size æ¥æ”¶ç¼“å­˜å¤§å°
  * @retval void
  */
 void bsp_uart_dmarx_config(uint8_t uart_id, uint8_t *mem_addr, uint32_t mem_size)
 {
     switch(uart_id) {
         case DEV_UART1:
-            /* Í£Ö¹DMA´«Êä */
+            /* åœæ­¢DMAä¼ è¾“ */
             HAL_DMA_Abort(&hdma_usart1_rx);
-            /* ÅäÖÃDMAÄÚ´æµØÖ·ºÍ´«Êä³¤¶È */
+            /* é…ç½®DMAå†…å­˜åœ°å€å’Œä¼ è¾“é•¿åº¦ */
             HAL_DMA_Start_IT(&hdma_usart1_rx, (uint32_t)&huart1.Instance->DR, (uint32_t)mem_addr, mem_size);
-            /* Ê¹ÄÜUARTµÄDMA½ÓÊÕ */
+            /* ä½¿èƒ½UARTçš„DMAæ¥æ”¶ */
             SET_BIT(huart1.Instance->CR3, USART_CR3_DMAR);
             break;
             
@@ -100,18 +100,18 @@ void bsp_uart_dmarx_config(uint8_t uart_id, uint8_t *mem_addr, uint32_t mem_size
 }
 
 /**
- * @brief UART DMA ³õÊ¼»¯
- * @param uart_id ´®¿ÚID
- * @param mem_addr ½ÓÊÕ»º´æµØÖ·
- * @param mem_size ½ÓÊÕ»º´æ´óĞ¡
+ * @brief UART DMA åˆå§‹åŒ–
+ * @param uart_id ä¸²å£ID
+ * @param mem_addr æ¥æ”¶ç¼“å­˜åœ°å€
+ * @param mem_size æ¥æ”¶ç¼“å­˜å¤§å°
  * @retval void
  */
 void uart_dma_init(uint8_t uart_id, uint8_t *mem_addr, uint32_t mem_size)
 {
-    /* ÅäÖÃDMA½ÓÊÕ */
+    /* é…ç½®DMAæ¥æ”¶ */
     bsp_uart_dmarx_config(uart_id, mem_addr, mem_size);
 
-    /* Ê¹ÄÜDMAÇëÇóºÍ¿ÕÏĞÖĞ¶Ï */
+    /* ä½¿èƒ½DMAè¯·æ±‚å’Œç©ºé—²ä¸­æ–­ */
     switch(uart_id) {
         case DEV_UART1:
             __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
@@ -130,9 +130,9 @@ void uart_dma_init(uint8_t uart_id, uint8_t *mem_addr, uint32_t mem_size)
 
 
 /**
- * @brief »ñÈ¡UART DMA½ÓÊÕ»º³åÇøÊ£Óà´óĞ¡
- * @param uart_id ´®¿ÚID
- * @retval Ê£Óà´óĞ¡
+ * @brief è·å–UART DMAæ¥æ”¶ç¼“å†²åŒºå‰©ä½™å¤§å°
+ * @param uart_id ä¸²å£ID
+ * @retval å‰©ä½™å¤§å°
  */
 uint16_t bsp_uart_get_dmarx_buf_remain_size(uint8_t uart_id)
 {
@@ -149,4 +149,4 @@ uint16_t bsp_uart_get_dmarx_buf_remain_size(uint8_t uart_id)
             return 0;
     }
 }
-/***************************** ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯Êı ****************************/
+/***************************** ç§»æ¤éœ€è¦ä¿®æ”¹çš„å‡½æ•° ****************************/
