@@ -12,9 +12,9 @@
 #include "bsp_uart.h"
 #include "fifo.h"
 
-/************************************* ÒÔÏÂÎª²ÎÊıºê¶¨Òå *******************************************/
-/******************* ÒÆÖ²ĞèÒªĞŞ¸ÄµÄºê¶¨Òå ******************/
-/* ´®¿Ú»º´æ´óĞ¡ */
+/************************************* ä»¥ä¸‹ä¸ºå‚æ•°å®å®šä¹‰ *******************************************/
+/******************* ç§»æ¤éœ€è¦ä¿®æ”¹çš„å®å®šä¹‰ ******************/
+/* ä¸²å£ç¼“å­˜å¤§å° */
 #define UART1_TX_BUF_SIZE           1024
 #define UART1_RX_BUF_SIZE           1024
 #define	UART1_DMA_RX_BUF_SIZE       128
@@ -34,60 +34,61 @@
 #define UART5_RX_BUF_SIZE           1024
 #define	UART5_DMA_RX_BUF_SIZE       128
 #define	UART5_DMA_TX_BUF_SIZE       128
-/******************* ÒÆÖ²ĞèÒªĞŞ¸ÄµÄºê¶¨Òå ******************/
+/******************* ç§»æ¤éœ€è¦ä¿®æ”¹çš„å®å®šä¹‰ ******************/
 
-/************************************** ÒÔÏÂÎª½á¹¹ÌåÉùÃ÷ ******************************************/
-/* ´®¿ÚÉè±¸Êı¾İ½á¹¹ */
+/************************************** ä»¥ä¸‹ä¸ºç»“æ„ä½“å£°æ˜ ******************************************/
+/* ä¸²å£è®¾å¤‡æ•°æ®ç»“æ„ */
 typedef struct
 {
-    uint8_t status;                 /* ·¢ËÍ×´Ì¬ */
-    _fifo_t tx_fifo;                /* ·¢ËÍfifo */
-    _fifo_t rx_fifo;                /* ½ÓÊÕfifo */
-    uint8_t *dmarx_buf;	            /* dma½ÓÊÕ»º´æ */
-    uint16_t dmarx_buf_size;        /* dma½ÓÊÕ»º´æ´óĞ¡*/
-    uint8_t *dmatx_buf;	            /* dma·¢ËÍ»º´æ */
-    uint16_t dmatx_buf_size;        /* dma·¢ËÍ»º´æ´óĞ¡ */
-    uint16_t last_dmarx_size;       /* dmaÉÏÒ»´Î½ÓÊÕÊı¾İ´óĞ¡ */
+    uint8_t status;                 /* å‘é€çŠ¶æ€ */
+    _fifo_t tx_fifo;                /* å‘é€fifo */
+    _fifo_t rx_fifo;                /* æ¥æ”¶fifo */
+    uint8_t *dmarx_buf;	            /* dmaæ¥æ”¶ç¼“å­˜ */
+    uint16_t dmarx_buf_size;        /* dmaæ¥æ”¶ç¼“å­˜å¤§å°*/
+    uint8_t *dmatx_buf;	            /* dmaå‘é€ç¼“å­˜ */
+    uint16_t dmatx_buf_size;        /* dmaå‘é€ç¼“å­˜å¤§å° */
+    uint16_t last_dmarx_size;       /* dmaä¸Šä¸€æ¬¡æ¥æ”¶æ•°æ®å¤§å° */
 } uart_device_t;
 
-/* Çå¿Õ»º³åÇøµÄ·µ»Ø×´Ì¬ */
+/* æ¸…ç©ºç¼“å†²åŒºçš„è¿”å›çŠ¶æ€ */
 typedef enum {
-    UART_FLUSH_OK = 0,              /* Çå¿Õ³É¹¦ */
-    UART_FLUSH_TIMEOUT,             /* Çå¿Õ³¬Ê± */
-    UART_FLUSH_ERROR                /* Çå¿Õ´íÎó */
+    UART_FLUSH_OK = 0,              /* æ¸…ç©ºæˆåŠŸ */
+    UART_FLUSH_TIMEOUT,             /* æ¸…ç©ºè¶…æ—¶ */
+    UART_FLUSH_ERROR                /* æ¸…ç©ºé”™è¯¯ */
 } uart_flush_status_t;
 
-/* Çå¿Õ»º³åÇøµÄÅäÖÃ²ÎÊı */
+/* æ¸…ç©ºç¼“å†²åŒºçš„é…ç½®å‚æ•° */
 typedef struct {
-    uint32_t timeout_ms;            /* ³¬Ê±Ê±¼ä(ºÁÃë) */
-    uint16_t chunk_size;            /* Ã¿´Î¶ÁÈ¡´óĞ¡ */
-    uint8_t delay_ms;               /* Ã¿´Î¶ÁÈ¡¼ä¸ô(ºÁÃë) */
+    uint32_t timeout_ms;            /* è¶…æ—¶æ—¶é—´(æ¯«ç§’) */
+    uint16_t chunk_size;            /* æ¯æ¬¡è¯»å–å¤§å° */
+    uint8_t delay_ms;               /* æ¯æ¬¡è¯»å–é—´éš”(æ¯«ç§’) */
 } uart_flush_config_t;
 
-/************************************** ÒÔÏÂÎªº¯ÊıÉùÃ÷ ******************************************/
-/* Íâ²¿º¯ÊıÉùÃ÷ */
-void uart_device_init(uint8_t uart_id);                                                     /* ´®¿ÚÉè±¸³õÊ¼»¯ */
-uint16_t uart_write(uint8_t uart_id, const uint8_t *buf, uint16_t size);                    /* ´®¿ÚĞ´Êı¾İ */
-uint16_t uart_read(uint8_t uart_id, uint8_t *buf, uint16_t size);                           /* ´®¿Ú¶ÁÊı¾İ */
-void uart_dmarx_done_isr(uint8_t uart_id);                                                  /* DMA½ÓÊÕÍê³ÉÖĞ¶Ï´¦Àí */
-void uart_dmarx_half_done_isr(uint8_t uart_id);                                             /* DMA½ÓÊÕ°ëÍê³ÉÖĞ¶Ï´¦Àí */
-void uart_dmarx_idle_isr(uint8_t uart_id);                                                  /* ´®¿Ú¿ÕÏĞÖĞ¶Ï´¦Àí */
-void uart_dmatx_done_isr(uint8_t uart_id);                                                  /* DMA·¢ËÍÍê³ÉÖĞ¶Ï´¦Àí */
-void uart_poll_dma_tx(uint8_t uart_id);                                                     /* ÂÖÑ¯DMA·¢ËÍ */
+/************************************** ä»¥ä¸‹ä¸ºå‡½æ•°å£°æ˜ ******************************************/
+/* å¤–éƒ¨å‡½æ•°å£°æ˜ */
+void uart_device_init(uint8_t uart_id);                                                     /* ä¸²å£è®¾å¤‡åˆå§‹åŒ– */
+uint16_t uart_write(uint8_t uart_id, const uint8_t *buf, uint16_t size);                    /* ä¸²å£å†™æ•°æ® */
+uint16_t uart_read(uint8_t uart_id, uint8_t *buf, uint16_t size);                           /* ä¸²å£è¯»æ•°æ® */
+void uart_dmarx_done_isr(uint8_t uart_id);                                                  /* DMAæ¥æ”¶å®Œæˆä¸­æ–­å¤„ç† */
+void uart_dmarx_half_done_isr(uint8_t uart_id);                                             /* DMAæ¥æ”¶åŠå®Œæˆä¸­æ–­å¤„ç† */
+void uart_dmarx_idle_isr(uint8_t uart_id);                                                  /* ä¸²å£ç©ºé—²ä¸­æ–­å¤„ç† */
+void uart_dmatx_done_isr(uint8_t uart_id);                                                  /* DMAå‘é€å®Œæˆä¸­æ–­å¤„ç† */
+void uart_poll_dma_tx(uint8_t uart_id);                                                     /* è½®è¯¢DMAå‘é€ */
 
-uint8_t uart_set_baudrate(uint8_t uart_id, uint32_t baudrate);                              /* ÉèÖÃ´®¿Ú²¨ÌØÂÊ */
-uart_flush_status_t uart_flush_buffer(uint8_t uart_id, const uart_flush_config_t *config);  /* Çå¿Õ´®¿Ú»º³åÇø,´øÅäÖÃ²ÎÊı */
-uart_flush_status_t uart_flush(uint8_t uart_id);                                            /* Çå¿Õ´®¿Ú»º³åÇø,Ê¹ÓÃÄ¬ÈÏÅäÖÃ */
+uint8_t uart_set_baudrate(uint8_t uart_id, uint32_t baudrate);                              /* è®¾ç½®ä¸²å£æ³¢ç‰¹ç‡ */
+uart_flush_status_t uart_flush_buffer(uint8_t uart_id, const uart_flush_config_t *config);  /* æ¸…ç©ºä¸²å£ç¼“å†²åŒº,å¸¦é…ç½®å‚æ•° */
+uart_flush_status_t uart_flush(uint8_t uart_id);                                            /* æ¸…ç©ºä¸²å£ç¼“å†²åŒº,ä½¿ç”¨é»˜è®¤é…ç½® */
 
-/******************* ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯ÊıÉùÃ÷ ******************/
-int uart1_print(const char *str, uint16_t len);                                             /* ´®¿Ú1Ö±½Ó´òÓ¡×Ö·û´® */
-int uart1_printf(const char *format, ...);                                                  /* ´®¿Ú1¸ñÊ½»¯´òÓ¡ */
-int uart3_print(const char *str, uint16_t len);                                             /* ´®¿Ú3Ö±½Ó´òÓ¡×Ö·û´® */
-int uart3_printf(const char *format, ...);                                                  /* ´®¿Ú3¸ñÊ½»¯´òÓ¡ */
-int uart4_print(const char *str, uint16_t len);                                             /* ´®¿Ú4Ö±½Ó´òÓ¡×Ö·û´® */
-int uart4_printf(const char *format, ...);                                                  /* ´®¿Ú4¸ñÊ½»¯´òÓ¡ */
-int uart5_print(const char *str, uint16_t len);                                             /* ´®¿Ú5Ö±½Ó´òÓ¡×Ö·û´® */
-int uart5_printf(const char *format, ...);                                                  /* ´®¿Ú5¸ñÊ½»¯´òÓ¡ */
-/******************* ÒÆÖ²ĞèÒªĞŞ¸ÄµÄº¯ÊıÉùÃ÷ ******************/
+/******************* ç§»æ¤éœ€è¦ä¿®æ”¹çš„å‡½æ•°å£°æ˜ ******************/
+int uart1_print(const char *str);                                                           /* ä¸²å£1ç›´æ¥æ‰“å°å­—ç¬¦ä¸² */
+int uart1_printf(const char *format, ...);                                                  /* ä¸²å£1æ ¼å¼åŒ–æ‰“å° */
+uint16_t uart1_read(uint8_t *buf);                                                          /* ä¸²å£1è¯»å–æ•°æ® */
+int uart3_print(const char *str);                                                           /* ä¸²å£3ç›´æ¥æ‰“å°å­—ç¬¦ä¸² */
+int uart3_printf(const char *format, ...);                                                  /* ä¸²å£3æ ¼å¼åŒ–æ‰“å° */
+int uart4_print(const char *str);                                                           /* ä¸²å£4ç›´æ¥æ‰“å°å­—ç¬¦ä¸² */
+int uart4_printf(const char *format, ...);                                                  /* ä¸²å£4æ ¼å¼åŒ–æ‰“å° */
+int uart5_print(const char *str);                                                           /* ä¸²å£5ç›´æ¥æ‰“å°å­—ç¬¦ä¸² */
+int uart5_printf(const char *format, ...);                                                  /* ä¸²å£5æ ¼å¼åŒ–æ‰“å° */
+/******************* ç§»æ¤éœ€è¦ä¿®æ”¹çš„å‡½æ•°å£°æ˜ ******************/
 
 #endif
