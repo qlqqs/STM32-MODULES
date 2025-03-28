@@ -25,7 +25,7 @@
  *               > 在UART中断中调用uart_dmarx_done_isr等函数
  *               > 在DMA中断中调用uart_dmatx_done_isr等函数
  *               > 在IDLE中断中调用uart_dmarx_idle_isr函数
- *               > 详情见"stm32f4xx_it.c"
+ *               > 详情见"stm32f4xx_it.c",代码基于F4芯片，如果不是F4芯片，则需要注意该文件中的“DMA_FLAG”适配
  *          4. STM32CubeMX中DMA的RX应改成回环
  * 
  * @usage   基本使用流程:
